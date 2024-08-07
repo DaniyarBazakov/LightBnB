@@ -171,13 +171,14 @@ const getAllReservations = function (guest_id, limit = 10) {
 const getAllProperties = function (options, limit = 10) {
   const queryParams = [];
   let queryString = `
-  SELECT properties.*, avg(property_reviews.rating) as average_rating
-  FROM properties
-  JOIN property_reviews ON properties.id = property_reviews.property_id
-  WHERE 1=1
-`;
+    SELECT properties.*, avg(property_reviews.rating) as average_rating
+    FROM properties
+    JOIN property_reviews ON properties.id = property_reviews.property_id
+    WHERE 1=1
+  `;
 
   let whereClauses = [];
+  let havingClauses = [];
 
   // Use a switch statement to handle each filter option
   Object.keys(options).forEach((key) => {
@@ -200,7 +201,7 @@ const getAllProperties = function (options, limit = 10) {
         break;
       case 'minimum_rating':
         queryParams.push(options[key]);
-        whereClauses.push(`avg(property_reviews.rating) >= $${queryParams.length}`);
+        havingClauses.push(`avg(property_reviews.rating) >= $${queryParams.length}`);
         break;
       default:
         break; // Ignore unknown keys
@@ -209,7 +210,12 @@ const getAllProperties = function (options, limit = 10) {
 
   // Add WHERE clause if there are any filters
   if (whereClauses.length > 0) {
-    queryString += `AND ${whereClauses.join(' AND ')} `;
+    queryString += ` AND ${whereClauses.join(' AND ')} `;
+  }
+
+  // Add HAVING clause if there are any aggregate filters
+  if (havingClauses.length > 0) {
+    queryString += ` HAVING ${havingClauses.join(' AND ')} `;
   }
 
   // Add GROUP BY, ORDER BY, and LIMIT clauses
@@ -229,6 +235,7 @@ const getAllProperties = function (options, limit = 10) {
       console.error(err.message);
     });
 };
+
 
 
 /**
