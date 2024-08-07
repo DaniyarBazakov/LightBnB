@@ -208,7 +208,7 @@ const getAllProperties = function (options, limit = 10) {
 
   // Add WHERE clause if there are any filters
   if (whereClauses.length > 0) {
-    queryString += `WHERE ${whereClauses.join(' AND ')} `;
+    queryString += `AND ${whereClauses.join(' AND ')} `;
   }
 
   // Add GROUP BY, ORDER BY, and LIMIT clauses
